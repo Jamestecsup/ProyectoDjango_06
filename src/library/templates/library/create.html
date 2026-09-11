@@ -1,0 +1,18 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Registrar libro - Biblioteca{% endblock %}
+
+{% block content %}
+    <div class="header">
+        <h1>Registrar nuevo libro</h1>
+    </div>
+
+    <div class="form-container">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="button" style="margin-top:1rem;">Guardar libro</button>
+            <a href="{% url 'library:list' %}" style="margin-left:1rem;">Cancelar</a>
+        </form>
+    </div>
+{% endblock %}

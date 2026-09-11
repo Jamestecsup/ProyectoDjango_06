@@ -1,0 +1,53 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Catálogo de libros{% endblock %}
+
+{% block content %}
+    <div class="header">
+        <h1>Catálogo de libros</h1>
+        <p>Total de libros registrados: {{ books|length }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Título</th>
+                <th>Autor</th>
+                <th>Año</th>
+                <th>Categorías</th>
+                <th>Editorial</th>
+                <th>Disponible</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><a href="{% url 'library:book_detail' book.pk %}">{{ book.title }}</a></td>
+                    <td>{{ book.author }}</td>
+                    <td>{{ book.publication_year }}</td>
+                    <td>
+                        {% for cat in book.categories.all %}
+                            {{ cat.name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            -
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for pub in book.publications.all %}
+                            {{ pub.publisher.name }}({{ pub.edition })}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            -
+                        {% endfor %}
+                    </td>
+                    <td>{% if book.cover %}<img src="{{ book.cover.url }}" width="50" height="70" alt="Cover">{% else %}-{% endif %}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">No hay libros registrados.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

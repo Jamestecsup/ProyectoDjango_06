@@ -1,0 +1,31 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ exam.title }} - Quiz{% endblock %}
+
+{% block content %}
+    <div class="header">
+        <h1>{{ exam.title }}</h1>
+        <p>{{ exam.description }}</p>
+        <p><small>Publicado: {{ exam.created|date:"d/m/Y H:i" }}</small></p>
+        <p><a class="button" href="{% url 'quiz:question_create' exam.pk %}">Añadir pregunta</a></p>
+    </div>
+
+    {% for question in questions %}
+        <div class="form-container" style="max-width:none;">
+            <h3>{{ forloop.counter }}. {{ question.text }} <small>({{ question.score }} pts)</small></h3>
+            <ul>
+                {% for choice in question.choices.all %}
+                    <li>
+                        {% if choice.is_correct %}
+                            <strong>{{ choice.text }} ✓</strong>
+                        {% else %}
+                            {{ choice.text }}
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% empty %}
+        <p>Este examen aún no tiene preguntas.</p>
+    {% endfor %}
+{% endblock %}

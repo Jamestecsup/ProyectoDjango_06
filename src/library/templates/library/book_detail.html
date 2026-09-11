@@ -1,0 +1,50 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ book.title }}{% endblock %}
+
+{% block content %}
+    <div class="header">
+        <h1>{{ book.title }}</h1>
+        <p><small>Año: {{ book.publication_year }} | Páginas: {{ book.pages }}</small></p>
+        <p><small>ISBN: {{ book.isbn }}</small></p>
+        <p><small>Autor: {{ book.author.name }}</small></p>
+    </div>
+
+    {% if book.cover %}
+        <img src="{{ book.cover.url }}" alt="Cover" style="max-width: 300px; margin: 1rem 0;">
+    {% endif %}
+
+    <div class="form-container">
+        <h3>Resumen</h3>
+        <p>{{ book.summary }}</p>
+    </div>
+
+    <div class="form-container">
+        <h3>Categorías</h3>
+        <ul>
+            {% for cat in book.categories.all %}
+                <li>{{ cat.name }}</li>
+            {% empty %}
+                <li>-</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="form-container">
+        <h3>Editoriales</h3>
+        <ul>
+            {% for pub in book.publications.all %}
+                <li>{{ pub.publisher.name }} - Edición {{ pub.edition }} ({{ pub.publication_date }})</li>
+            {% empty %}
+                <li>-</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="form-container">
+        <h3>Datos del autor</h3>
+        <p><strong>Email:</strong> {{ book.author.email }}</p>
+        <p><strong>Bio:</strong> {{ book.author.bio }}</p>
+        <p><strong>Perfil biográfico:</strong> {{ book.author.profile.birth_date }} - {{ book.author.profile.nationality }}</p>
+    </div>
+{% endblock %}

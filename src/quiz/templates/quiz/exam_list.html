@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Exámenes - Quiz{% endblock %}
+
+{% block content %}
+    <div class="header">
+        <h1>Exámenes disponibles</h1>
+        <p>Total de exámenes: {{ exams|length }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Título</th>
+                <th>Descripción</th>
+                <th>Creado</th>
+                <th>Preguntas</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for exam in exams %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><a href="{% url 'quiz:exam_detail' exam.pk %}">{{ exam.title }}</a></td>
+                    <td>{{ exam.description }}</td>
+                    <td>{{ exam.created|date:"d/m/Y H:i" }}</td>
+                    <td>{{ exam.questions.count }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">No hay exámenes registrados.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

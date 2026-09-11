@@ -1,0 +1,40 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Catálogo - Biblioteca{% endblock %}
+
+{% block content %}
+    <div class="header">
+        <h1>Catálogo de libros</h1>
+        <p>Total de libros registrados: {{ libros|length }}</p>
+        <p><a class="button" href="{% url 'library:create' %}">Registrar libro</a></p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Título</th>
+                <th>Autor</th>
+                <th>Género</th>
+                <th>Año</th>
+                <th>Disponible</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for libro in libros %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ libro.titulo }}</td>
+                    <td>{{ libro.autor }}</td>
+                    <td>{{ libro.genero }}</td>
+                    <td>{{ libro.anio_publicacion }}</td>
+                    <td>{% if libro.disponible %}Sí{% else %}No{% endif %}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6">No hay libros registrados.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

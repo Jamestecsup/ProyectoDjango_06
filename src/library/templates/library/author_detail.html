@@ -1,0 +1,28 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Perfil del autor: {{ author.name }}{% endblock %}
+
+{% block content %}
+    <div class="header">
+        <h1>Perfil del autor: {{ author.name }}</h1>
+    </div>
+
+    <div class="form-container">
+        <p><strong>Email:</strong> {{ author.email }}</p>
+        <p><strong>Bio:</strong> {{ author.bio }}</p>
+        {% if author.profile.photo %}
+            <img src="{{ author.profile.photo.url }}" alt="Author photo" style="max-width: 200px; margin: 1rem 0;">
+        {% endif %}
+    </div>
+
+    <div class="form-container">
+        <h3>Libros del autor</h3>
+        <ul>
+            {% for book in author.books.all %}
+                <li><a href="{% url 'library:book_detail' book.pk %}">{{ book.title }}</a> ({{ book.publication_year }})</li>
+            {% empty %}
+                <li>-</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
