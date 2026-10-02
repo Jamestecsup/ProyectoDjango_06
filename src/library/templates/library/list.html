@@ -6,7 +6,7 @@
     <div class="header">
         <h1>Catálogo de libros</h1>
         <p>Total de libros registrados: {{ libros|length }}</p>
-        <p><a class="button" href="{% url 'library:create' %}">Registrar libro</a></p>
+        <p><a class="button" href="{% url 'admin:library_book_add' %}">Registrar libro</a></p>
     </div>
 
     <table>

@@ -1,0 +1,64 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ movie.title }} - Película{% endblock %}
+
+{% block content %}
+    <div class="header">
+        <h1>{{ movie.title }} ({{ movie.release_year }})</h1>
+        <p>
+            Director: {{ movie.director|default:"-" }} |
+            Duración: {{ movie.duration_minutes }} min |
+            Promedio: {% if movie.average_score %}{{ movie.average_score|floatformat:1 }}/5{% else %}sin valoraciones{% endif %}
+            ({{ movie.ratings_total }})
+        </p>
+        <p>
+            Géneros:
+            {% for genre in movie.genres.all %}
+                {{ genre.name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                -
+            {% endfor %}
+        </p>
+    </div>
+
+    {% if movie.poster %}
+        <p><img src="{{ movie.poster.url }}" width="160" alt="Poster"></p>
+    {% endif %}
+
+    {% if movie.synopsis %}
+        <h2>Sinopsis</h2>
+        <p>{{ movie.synopsis }}</p>
+    {% endif %}
+
+    {% if movie.cast.all %}
+        <h2>Reparto</h2>
+        <ul>
+            {% for person in movie.cast.all %}
+                <li>{{ person.name }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <h2>Valoraciones</h2>
+    <ul>
+        {% for rating in ratings %}
+            <li><strong>{{ rating.reviewer_name }}</strong>: {{ rating.score }}/5{% if rating.comment %} - {{ rating.comment }}{% endif %}</li>
+        {% empty %}
+            <li>Esta película aún no tiene valoraciones.</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Recomendadas del mismo género mejor valoradas</h2>
+    <ul>
+        {% for rec in recommendations %}
+            <li>
+                <a href="{% url 'movies:detail' rec.pk %}">{{ rec.title }} ({{ rec.release_year }})</a>
+                - {% if rec.average_score %}{{ rec.average_score|floatformat:1 }}/5{% else %}sin valoraciones{% endif %}
+            </li>
+        {% empty %}
+            <li>No hay recomendaciones para esta película.</li>
+        {% endfor %}
+    </ul>
+
+    <p><a class="button" href="{% url 'movies:list' %}">Volver al catálogo</a></p>
+{% endblock %}

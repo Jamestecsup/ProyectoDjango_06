@@ -1,5 +1,8 @@
 """Management command that seeds the demo exam used by the S03 lab.
 
+Usage:
+    python manage.py seed_quiz_demo
+
 Creates one Exam with two Questions (four Choices each, exactly one correct
 per question). Idempotent: skips the work when the demo exam already exists.
 """
@@ -9,7 +12,7 @@ from quiz.models import Exam, Question, Choice
 
 DEMO_EXAM = {
     'title': 'Introduction to Django',
-    'description': ('Demo exam created by the seed_demo_data command. '
+    'description': ('Demo exam created by the seed_quiz_demo command. '
                     'It has two questions and four options each.'),
     'questions': [
         {
