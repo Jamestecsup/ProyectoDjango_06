@@ -1,16 +1,52 @@
-# Proyecto Django 5 - Laboratorio de Administración (S05)
+# Proyecto Django 6 - Motor de plantillas con Django (S06)
 
-**Continuación de:** [ProyectoDjango_04](https://github.com/Jamestecsup/ProyectoDjango_04)
+**Continuación de:** [ProyectoDjango_05](https://github.com/Jamestecsup/ProyectoDjango_05)
 
-Este laboratorio continúa el proyecto anterior (S04: biblioteca con relaciones, apps `library`,
-`quiz` y `core`) agregando la app `movies`: un catálogo de películas gestionado desde el
-administrador de Django (`ModelAdmin` con listado/filtros/búsqueda, valoraciones en línea,
-auditoría de solo lectura y grupos con permisos), más una vista pública de recomendación
-(películas del mismo género mejor valoradas). El detalle del S05 está en la sección
-[Detalle del laboratorio S05](#detalle-del-laboratorio-s05); las secciones S04 se conservan
-como antecedente heredado del repo 4.
+Este laboratorio continúa el proyecto anterior (S05: catálogo de películas con la app
+`movies`, más `library`, `quiz` y `core`) agregando la app `news`: un portal de noticias
+gestionado desde el administrador de Django y publicado con el motor de plantillas
+(herencia con `base.html`, fragmento reutilizable `_article_card.html`, variables,
+etiquetas de control y filtros). El detalle del S06 está en la sección
+[Detalle del laboratorio S06](#detalle-del-laboratorio-s06); las secciones S05 y S04
+se conservan como antecedente heredado de los repos 5 y 4.
 
-## Qué incluye este laboratorio (S04)
+## Qué incluye este laboratorio (S06)
+
+- **App `news`** con modelos `Author`, `Category` y `Article` (imagen destacada,
+  fecha de publicación indexada, `is_published`, FK `SET_NULL` + M2M).
+- **Motor de plantillas**: `templates/base.html` (bloques `title`, `content`,
+  `sidebar`) + fragmento `news/_article_card.html` incluido en portada,
+  categoría y relacionadas, sin repetir marcado.
+- **Tres páginas**: portada (`for` + `empty` + filtros `date`/`truncatewords`),
+  detalle (imagen, autor, categorías) y listado por categoría (reutiliza la tarjeta).
+- **Rutas nombradas** (`news:home`, `news:detail`, `news:by_category`) enlazadas
+  solo con `{% url %}`; estilos con `{% load static %}`.
+- **Admin personalizado** (`list_display`, `list_filter`, `search_fields`) y
+  `seed_news`: 3 categorías, 3 autores y 6 noticias visibles en el portal.
+- **Escapado automático** verificado: el HTML guardado en el cuerpo se muestra
+  como texto (`&lt;strong&gt;`), no se ejecuta.
+- Tests: `python manage.py test news` (8 pruebas OK).
+
+## Instalación y ejecución (S06)
+
+```bash
+pip install -r requirements.txt
+
+cd src
+python manage.py migrate
+python manage.py seed_news      # 3 categorías, 3 autores, 6 noticias
+python manage.py createsuperuser  # sugerido: admin / admin12345
+
+python manage.py test news
+python manage.py runserver 0.0.0.0:8000
+```
+
+**Portal:** `/news/` (portada), `/news/article/<slug>/` (detalle),
+`/news/category/<slug>/` (categoría). **Panel:** `/admin/` (`admin` / `admin12345`).
+
+---
+
+## Antecedente: qué incluía el laboratorio S04
 
 - **Modelos relacionales** en la app `library`: `Author`, `AuthorProfile`, `Book`,
   `Publisher`, `Category`, `Publication` (intermedio).
@@ -181,7 +217,7 @@ El autor NO fue borrado porque existen libros asociados.
 
 ---
 
-## Detalle del laboratorio S05
+## Antecedente: detalle del laboratorio S05
 
 **Continuación acumulativa de S04.** Se conserva `library`, `quiz` y `core`, y se
 agrega la aplicación `movies` para el caso del laboratorio: catálogo de películas
