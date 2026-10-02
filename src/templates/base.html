@@ -1,0 +1,39 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Portal de noticias{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="{% url 'news:home' %}">Portal de noticias</a>
+        <nav class="site-nav">
+            <a href="{% url 'news:home' %}">Portada</a>
+            {% for item in categories %}
+                <a href="{% url 'news:by_category' item.slug %}">{{ item.name }}</a>
+            {% endfor %}
+        </nav>
+    </header>
+    <div class="layout">
+        <main class="content">
+            {% block content %}{% endblock %}
+        </main>
+        <aside class="sidebar">
+            {% block sidebar %}
+                <h2>Secciones</h2>
+                <ul>
+                    {% for item in categories %}
+                        <li><a href="{% url 'news:by_category' item.slug %}">{{ item.name }}</a></li>
+                    {% empty %}
+                        <li>Sin secciones.</li>
+                    {% endfor %}
+                </ul>
+                <p><a href="{% url 'admin:index' %}">Gestionar en el panel</a></p>
+            {% endblock %}
+        </aside>
+    </div>
+    <footer class="site-footer">Portal de noticias - Motor de plantillas con Django (S06)</footer>
+</body>
+</html>

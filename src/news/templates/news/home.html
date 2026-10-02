@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Portada - Portal de noticias{% endblock %}
+
+{% block content %}
+    <h1>Ultimas noticias</h1>
+    <p>Total de noticias publicadas: {{ articles|length }}</p>
+    <div class="grid">
+        {% for article in articles %}
+            {% include 'news/_article_card.html' with article=article %}
+        {% empty %}
+            <p>No hay noticias publicadas todavia.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

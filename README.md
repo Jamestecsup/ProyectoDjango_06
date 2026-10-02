@@ -317,3 +317,144 @@ no debe inventar géneros ni tocar usuarios. Así cada uno ve solo lo que le toc
    trabajo diario (alta/edición, editores), y se comprueban entrando como editor.
 5. Lo que el panel no resuelve (promedios, ranking por género, recomendaciones)
    exige una vista propia: el panel administra, la vista pública recomienda.
+
+---
+
+## Detalle del laboratorio S06
+
+**Motor de plantillas con Django.** Continuación acumulativa: se conservan
+`core`, `library`, `movies` y `quiz`, y se agrega la aplicación `news`
+(portal de noticias gestionado desde el panel y publicado con herencia
+de plantillas + fragmento reutilizable).
+
+### Qué incluye este laboratorio (S06)
+
+- **App `news`** declarada en `INSTALLED_APPS` (`src/config/settings.py`).
+  Pillow ya estaba en `requirements.txt` (necesario para `ImageField`).
+- **Ajustes de plantillas y archivos** (`src/config/settings.py`):
+  - `TEMPLATES[0]['DIRS'] = [BASE_DIR / 'templates']` (directorio global).
+  - `STATIC_URL = 'static/'` + `STATICFILES_DIRS = [BASE_DIR / 'static']`.
+  - `MEDIA_URL = '/media/'` + `MEDIA_ROOT = BASE_DIR / 'media'` (ya existía).
+- **Servido en desarrollo** (`src/config/urls.py`): `news/` incluido en el
+  `urlpatterns`; con `DEBUG` se sirven medios (`MEDIA_URL`) y estáticos del
+  proyecto (`STATIC_URL`) para que el test-client y `runserver` devuelvan 200.
+- **Modelos** (`src/news/models.py`):
+  - `Author(name, email, bio, photo)` — `photo` en `authors/`.
+  - `Category(name unique, slug unique, description)`.
+  - `Article(title, slug unique, summary, body, featured_image en
+    `articles/`, published_at indexada, is_published, author FK `SET_NULL`
+    `related_name='articles'`, categories M2M `related_name='articles'`) con
+    `ordering = ['-published_at']`.
+- **Migración versionada** `news/0001_initial.py` (generada con
+  `makemigrations`, aplicada con `migrate`).
+- **Plantillas** (herencia + fragmento, sin repetir marcado):
+  - `src/templates/base.html` — estructura común del portal con
+    `{% load static %}`, `<link href="{% static 'css/style.css' %}">` y
+    bloques `{% block title %}`, `{% block content %}`, `{% block sidebar %}`.
+    La navegación usa solo `{% url %}` (`news:home`, `news:by_category`).
+  - `src/news/templates/news/_article_card.html` — tarjeta de una noticia
+    (imagen si existe, título enlazado, autor, fecha, categorías enlazadas,
+    `summary|truncatewords:30`). Se incluye con
+    `{% include 'news/_article_card.html' with article=... %}` desde la
+    portada, la categoría y las relacionadas del detalle.
+  - `src/news/templates/news/home.html` — portada: `{% for %}` +
+    `{% empty %}` ("No hay noticias…") + filtros `date:"d M Y H:i"` y
+    `truncatewords:30` (vía el fragmento).
+  - `src/news/templates/news/detail.html` — hereda de `base.html`, muestra
+    imagen (`article.featured_image.url`), autor, categorías enlazadas,
+    `summary` y `body|linebreaks`; incluye relacionadas con el mismo fragmento.
+  - `src/news/templates/news/category_list.html` — reutiliza el mismo
+    fragmento para el listado por categoría.
+- **Vistas y rutas** (`src/news/views.py`, `src/news/urls.py`, `app_name='news'`):
+  - `''` → `home` (`news:home`), `'article/<slug:slug>/'` → `detail`
+    (`news:detail`), `'category/<slug:slug>/'` → `article_by_category`
+    (`news:by_category`). Solo se publican `is_published=True`.
+- **Estilos** (`src/static/css/style.css`): tarjetas, grilla, cabecera,
+  barra lateral y detalle; comprobado con 200 en `/static/css/style.css`
+  y en `<link>` de la portada.
+- **Admin personalizado** (`src/news/admin.py`): las tres entidades con
+  `list_display`, `list_filter` y `search_fields`:
+  - `Article`: `list_display=(title, author, category_list, published_at,
+    is_published)`, `list_filter=(is_published, published_at, categories,
+    author)`, `search_fields=(title, summary, body, author__name,
+    categories__name)`.
+  - `Category`: `list_display=(name, slug, articles_total)`,
+    `list_filter=(articles__author,)`, `search_fields=(name, description)`.
+  - `Author`: `list_display=(name, email, articles_total)`,
+    `list_filter=(articles__categories,)`, `search_fields=(name, email)`.
+- **Datos de prueba**: `python manage.py seed_news` crea 3 categorías
+  (Politica, Deportes, Cultura), 3 autores y 6 noticias (2 por categoría;
+  una comparte Politica+Cultura). Verificado: portada con 6 tarjetas,
+  `/news/category/politica/` con 2.
+- **Tests**: `src/news/tests.py` (8 pruebas: herencia+fragmento, `empty`,
+  filtros fecha/recorte, detalle con imagen/autor/categorías, reutilización
+  en categoría, CSS estático, escapado automático y veto de no publicados).
+
+### Instalación y ejecución
+
+```bash
+pip install -r requirements.txt
+
+cd src
+python manage.py migrate
+python manage.py seed_news        # 3 categorias, 3 autores, 6 noticias
+python manage.py createsuperuser  # sugerido: admin / admin12345
+
+python manage.py test news        # 8 OK
+python manage.py runserver 0.0.0.0:8000
+```
+
+**Credenciales de acceso al admin (`/admin/`):**
+
+| Usuario | Contraseña   | Rol          |
+|---------|--------------|--------------|
+| `admin` | `admin12345` | superusuario |
+
+### Rutas (URLs)
+
+| Ruta | Nombre | Descripción |
+|------|--------|-------------|
+| `/news/` | `news:home` | Portada con todas las noticias publicadas. |
+| `/news/article/<slug:slug>/` | `news:detail` | Detalle con imagen, autor y categorías. |
+| `/news/category/<slug:slug>/` | `news:by_category` | Listado por categoría (reutiliza la tarjeta). |
+| `/admin/` | — | Panel: alta/edición de autores, categorías y noticias. |
+
+### Prueba de escapado automático (paso 12)
+
+- **Qué se hizo:** el artículo `elecciones-regionales-guia` guarda en `body`
+  el texto literal `Este es un <strong>texto con etiqueta HTML</strong>…`.
+- **Qué muestra la página:** en `/news/article/elecciones-regionales-guia/`
+  se ve la etiqueta como texto visible (`<strong>…</strong>`), no como negrita.
+- **Por qué:** el motor de plantillas de Django tiene *autoescape* activado
+  por defecto: `{{ article.body }}` escapa a `&lt;strong&gt;…`. Así un redactor
+  no puede inyectar HTML/JS desde el panel. Solo con el filtro `|safe`
+  (que aquí no se usa a propósito) se renderizaría como HTML real.
+  Test que lo fija: `test_autoescape_shows_html_as_text`
+  (`&lt;b&gt;` presente, `<b>` ausente).
+
+### Evaluación (rúbrica S06)
+
+1. **Motor con herencia y fragmentos (5):** `base.html` + bloques
+   `title/content/sidebar` y `_article_card.html` incluido en 3 sitios sin
+   repetir marcado.
+2. **Variables, control y filtros (5):** `for/empty/if`, `{{ }}` con
+   `date`, `truncatewords`, `linebreaks`, `length`; sin lógica de negocio
+   en la plantilla.
+3. **Gestión desde el administrador (5):** lo creado/editado en el panel
+   (`is_published`, categorías, autor, imagen) aparece en el portal sin
+   tocar código; verificado con 6 noticias en 3 categorías.
+4. **Repositorio con observaciones (5):** esta documentación + estructura
+   de plantillas explicada + tests (`test news`: 8 OK).
+
+### Conclusiones (S06)
+
+1. La herencia (`extends` + `block`) elimina el marcado duplicado: cabecera,
+   navegación y barra lateral viven en un solo `base.html`.
+2. Los fragmentos (`include`) garantizan que la tarjeta se vea igual en
+   portada, categoría y relacionadas; cambiarla una vez la cambia en todo el sitio.
+3. Los filtros (`date`, `truncatewords`, `linebreaks`) formatean en la capa
+   de presentación sin contaminar vistas ni modelos.
+4. `{% url %}` desacopla las plantillas de las rutas: renombrar una URL no
+   rompe ningún enlace.
+5. El *autoescape* protege el portal del contenido del panel por defecto;
+   mostrar HTML real debe ser una decisión explícita (`|safe`), no un accidente.

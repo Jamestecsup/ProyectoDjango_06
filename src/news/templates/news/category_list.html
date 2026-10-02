@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} - Portal de noticias{% endblock %}
+
+{% block content %}
+    <p class="breadcrumb"><a href="{% url 'news:home' %}">Portada</a> / {{ category.name }}</p>
+    <h1>Seccion: {{ category.name }}</h1>
+    {% if category.description %}
+        <p>{{ category.description }}</p>
+    {% endif %}
+    <p>Noticias en esta seccion: {{ articles|length }}</p>
+    <div class="grid">
+        {% for article in articles %}
+            {% include 'news/_article_card.html' with article=article %}
+        {% empty %}
+            <p>No hay noticias en esta categoria.</p>
+        {% endfor %}
+    </div>
+{% endblock %}
